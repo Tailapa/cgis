@@ -1,3 +1,5 @@
+Live app here: https://cgis-app.fly.dev/
+
 # Citizen Grievance Intelligence System (CGIS)
 
 CGIS is a full-stack web application that lets citizens submit unstructured grievance text in any Indian language, extracts structured fields using an LLM (Groq / OpenRouter), stores records in a Supabase PostgreSQL database, and provides a visual analytics dashboard and a natural-language chatbot interface for querying the data. An admin panel lets operators review, update, and manage submissions.
