@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CGIS &mdash; Admin</title>
+  <link rel="stylesheet" href="/src/styles/tokens.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <style>
+    /* ── Login screen ────────────────────────────────────────────────────── */
+    .login-screen {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--card-shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .login-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.4;
+    }
+
+    /* ── Admin layout ────────────────────────────────────────────────────── */
+    .admin-outer {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 60px);
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Stats strip — sage green section (section alternation) */
+    .stats-strip {
+      display: flex;
+      gap: 28px;
+      padding: 10px 24px;
+      background: var(--bg-section);
+      border-bottom: 1px solid rgba(74, 107, 94, 0.25);
+      flex-shrink: 0;
+    }
+
+    .stat-item { text-align: left; }
+
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-on-dark);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: rgba(242, 234, 216, 0.65);
+      text-transform: uppercase;
+      letter-spacing: var(--track-caps);
+      margin-top: 3px;
+    }
+
+    /* ── Split layout ────────────────────────────────────────────────────── */
+    .admin-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar — white on cream base ──────────────────────────────────── */
+    .admin-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .admin-sidebar-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .admin-search {
+      background: var(--bg-raised);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font-body);
+      outline: none;
+      width: 100%;
+      caret-color: var(--accent-amber);
+      transition: border-color 0.15s;
+    }
+
+    .admin-search:focus { border-color: var(--border-active); }
+
+    #admin-sidebar-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    /* ── Sidebar item — clean, status dot, no decorative elements ────────── */
+    .sidebar-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.1s;
+      margin-bottom: 1px;
+      position: relative;
+    }
+
+    .sidebar-item:hover { background: rgba(232, 160, 32, 0.05); }
+
+    /* Active: amber left bar ONLY — negentropy principle: one signal per state */
+    .sidebar-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 4px; bottom: 4px;
+      width: 2px;
+      background: var(--accent-amber);
+      border-radius: 2px;
+    }
+
+    .sidebar-item.active .sidebar-name { color: var(--text-primary); }
+
+    /* Status dot indicators */
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .dot-open     { background: var(--status-open); }
+    .dot-review   { background: var(--status-review); }
+    .dot-resolved { background: var(--status-resolved); }
+    .dot-rejected { background: var(--status-rejected); }
+
+    .sidebar-item-content { min-width: 0; flex: 1; }
+
+    .sidebar-name {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+
+    .sidebar-meta {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .sidebar-time {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Main panel ──────────────────────────────────────────────────────── */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .detail-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px;
+    }
+
+    /* Back button — mobile only */
+    .back-btn {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+      transition: color 0.12s;
+    }
+
+    .back-btn:hover { color: var(--accent-amber); }
+
+    /* Empty state */
+    #detail-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+    }
+
+    #detail-panel { }
+    #detail-panel.hidden { display: none; }
+
+    /* ── Detail card ─────────────────────────────────────────────────────── */
+    .detail-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--card-shadow);
+      padding: 28px;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .detail-name-block .grievant-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .detail-name-block .grievant-id {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .detail-submitted {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .detail-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .detail-field label {
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: var(--track-caps);
+      margin-bottom: 4px;
+    }
+
+    .detail-field span,
+    .detail-field p {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.45;
+    }
+
+    /* ── Original text collapsible ───────────────────────────────────────── */
+    details.original-details {
+      margin-bottom: 24px;
+    }
+
+    details.original-details summary {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: var(--track-caps);
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px 0;
+      user-select: none;
+    }
+
+    details.original-details summary:hover { color: var(--text-secondary); }
+
+    .original-text-pre {
+      margin-top: 10px;
+      background: var(--bg-deep);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      overflow-x: auto;
+      line-height: 1.55;
+    }
+
+    /* ── Actions section ─────────────────────────────────────────────────── */
+    .detail-actions {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 24px;
+      margin-top: 4px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .actions-left { display: flex; flex-direction: column; gap: 8px; }
+
+    .actions-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: var(--track-caps);
+      margin-bottom: 4px;
+    }
+
+    /* Status select — no default border, sage focus ring ───────────────── */
+    .status-select {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      outline: none;
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+
+    .status-select:focus {
+      box-shadow: 0 0 0 2px var(--accent-primary);
+    }
+
+    /* Notes textarea — sage glow on focus ONLY ─────────────────────────── */
+    .notes-area {
+      width: 100%;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      caret-color: var(--accent-primary);
+      transition: box-shadow 0.15s;
+    }
+
+    .notes-area:focus {
+      box-shadow: 0 0 0 2px rgba(74, 107, 94, 0.25);
+    }
+
+    .actions-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    /* Delete — red #c44040, confirmation required ───────────────────────── */
+    .btn-delete {
+      background: rgba(196, 64, 64, 0.10);
+      color: #c44040;
+      font-size: 13px;
+      padding: 8px 16px;
+      border: 1px solid rgba(196, 64, 64, 0.20);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: background 0.15s;
+    }
+
+    .btn-delete:hover { background: rgba(196, 64, 64, 0.20); }
+
+    /* ── Delete confirmation modal ───────────────────────────────────────── */
+    .delete-modal.hidden { display: none; }
+
+    /* ── Mobile layout ───────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .admin-sidebar {
+        position: fixed;
+        top: 60px; left: 0; bottom: 0;
+        width: 100%;
+        z-index: 200;
+        transition: transform 0.2s ease;
+      }
+
+      .admin-sidebar.mobile-hidden {
+        transform: translateX(-100%);
+      }
+
+      .detail-container {
+        padding: 16px;
+      }
+
+      .back-btn {
+        display: flex;
+      }
+
+      .detail-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <a href="/" class="navbar-brand">CGIS</a>
+  <div class="navbar-links">
+    <a href="/"      class="nav-link">Dashboard</a>
+    <a href="/chat"  class="nav-link">Chatbot</a>
+    <a href="/admin" class="nav-link active" aria-current="page">Admin</a>
+    <button class="btn-secondary" id="logout-btn" style="display:none;font-size:13px" aria-label="Log out">Logout</button>
+  </div>
+</nav>
+
+<!-- Login screen -->
+<div id="login-screen" class="login-screen hidden">
+  <div class="login-card">
+    <h1 class="login-title">Admin Access</h1>
+    <p class="login-sub">Enter your admin password to continue.</p>
+    <form id="login-form" novalidate>
+      <div class="form-group">
+        <label for="admin-password">Password</label>
+        <input type="password" class="form-input" id="admin-password" autocomplete="current-password" aria-describedby="login-error" />
+      </div>
+      <div id="login-error" class="msg-error" style="min-height:20px;margin-bottom:14px" role="alert" aria-live="polite"></div>
+      <button type="submit" class="btn-primary" style="width:100%">Login</button>
+    </form>
+  </div>
+</div>
+
+<!-- Admin dashboard -->
+<div id="admin-dashboard" class="hidden">
+
+  <div class="admin-outer">
+    <!-- Stats strip -->
+    <div class="stats-strip" role="region" aria-label="Summary statistics">
+      <div class="stat-item">
+        <div class="stat-val" id="stat-total">—</div>
+        <div class="stat-lbl">Total</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stat-open">—</div>
+        <div class="stat-lbl">Open</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stat-review">—</div>
+        <div class="stat-lbl">Under Review</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stat-resolved-today">—</div>
+        <div class="stat-lbl">Resolved Today</div>
+      </div>
+    </div>
+
+    <div class="admin-layout">
+
+      <!-- Sidebar -->
+      <aside class="admin-sidebar" id="admin-sidebar" aria-label="Grievance list">
+        <div class="admin-sidebar-header">
+          <input type="search" class="admin-search" id="admin-search"
+            placeholder="Search name, district, department&hellip;"
+            aria-label="Search grievances" />
+          <select class="filter-select" id="admin-status-filter" style="width:100%;font-size:12px" aria-label="Filter by status">
+            <option value="">All Statuses</option>
+            <option value="open">Open</option>
+            <option value="under_review">Under Review</option>
+            <option value="resolved">Resolved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div id="admin-sidebar-list" role="list" aria-label="Grievances"></div>
+      </aside>
+
+      <!-- Main panel -->
+      <main class="admin-main" aria-label="Grievance detail">
+        <div class="detail-container">
+
+          <!-- Empty state -->
+          <div id="detail-empty" aria-label="No grievance selected">
+            Select a grievance to view details
+          </div>
+
+          <!-- Detail panel -->
+          <div id="detail-panel" class="hidden">
+
+            <!-- Back button (mobile only) -->
+            <button class="back-btn" id="back-btn" aria-label="Back to grievance list">
+              &larr; Back to list
+            </button>
+
+            <div class="detail-card">
+              <div class="detail-header">
+                <div class="detail-name-block">
+                  <div class="grievant-name" id="detail-name"></div>
+                  <div class="grievant-id" id="detail-id"></div>
+                </div>
+                <div class="detail-submitted" id="detail-submitted"></div>
+              </div>
+
+              <div class="detail-grid">
+                <div class="detail-field"><label>Age</label><span id="detail-age"></span></div>
+                <div class="detail-field"><label>Gender</label><span id="detail-gender"></span></div>
+                <div class="detail-field"><label>PIN Code</label><span id="detail-pin"></span></div>
+                <div class="detail-field"><label>District</label><span id="detail-district"></span></div>
+                <div class="detail-field"><label>State</label><span id="detail-state"></span></div>
+                <div class="detail-field"><label>Department</label><span id="detail-dept"></span></div>
+              </div>
+
+              <div style="margin-bottom:20px">
+                <div class="detail-field">
+                  <label>Problem Summary</label>
+                  <p id="detail-summary" style="font-size:15px;line-height:1.6;margin-top:4px"></p>
+                </div>
+              </div>
+
+              <div style="margin-bottom:20px">
+                <div class="detail-field">
+                  <label>Proof Reference</label>
+                  <span id="detail-proof" style="font-family:var(--font-mono);font-size:13px"></span>
+                </div>
+              </div>
+
+              <details class="original-details">
+                <summary>View Original Submission</summary>
+                <pre class="original-text-pre" id="detail-original"></pre>
+              </details>
+
+              <div class="detail-actions">
+                <!-- Status -->
+                <div class="actions-left">
+                  <div class="actions-label">Status</div>
+                  <select class="status-select" id="detail-status" aria-label="Update status">
+                    <option value="open">Open</option>
+                    <option value="under_review">Under Review</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                  <div class="actions-label">Internal Notes</div>
+                  <textarea class="notes-area" id="detail-notes"
+                    placeholder="Add internal notes (not visible to citizens)&hellip;"
+                    aria-label="Internal notes"></textarea>
+                </div>
+              </div>
+
+              <div class="actions-row">
+                <button class="btn-delete" id="delete-btn" aria-label="Delete this grievance">Delete Grievance</button>
+                <button class="btn-primary" id="save-btn" aria-label="Save changes">Save Changes</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="modal-overlay hidden delete-modal" id="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+  <div class="modal-box" style="max-width:380px">
+    <h2 id="delete-modal-title" style="font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:10px">Confirm Delete</h2>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:24px;line-height:1.5">This will permanently delete the grievance record and cannot be undone.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-secondary" id="delete-cancel-btn">Cancel</button>
+      <button class="btn-delete" id="delete-confirm-btn">Delete permanently</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/admin.ts"></script>
+</body>
+</html>

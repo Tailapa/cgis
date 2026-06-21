@@ -1,0 +1,37 @@
+/* Chart.js canvas override */
+canvas {
+  display: block;
+}
+
+/* ── SQL disclosure block — light theme ──────────────────────────────────── */
+.sql-details {
+  margin-top: 8px;
+}
+
+.sql-summary {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+  list-style: none;
+  letter-spacing: 0.02em;
+  transition: color 0.12s;
+}
+
+.sql-summary:hover { color: var(--text-secondary); }
+
+.sql-block {
+  margin-top: 6px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.5;
+}

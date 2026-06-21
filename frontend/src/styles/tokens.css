@@ -1,0 +1,149 @@
+/* ── Google Fonts — Playfair Display (headings) + DM Sans (body) ─────────── */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  /* ── Page backgrounds ────────────────────────────────────────────────────── */
+  --bg-void:     #e8e0c8;   /* warm cream — page canvas                        */
+  --bg-deep:     #f2ead8;   /* lighter cream — secondary surfaces               */
+  --bg-surface:  #ffffff;   /* white — cards, modals                            */
+  --bg-raised:   #ffffff;   /* white — elevated elements                        */
+  --bg-glass:    rgba(143, 168, 154, 0.92); /* sage navbar backdrop             */
+  --bg-section:  #8fa89a;   /* sage green — navbar, alternating sections        */
+  --bg-base:     #e8e0c8;   /* alias for --bg-void                              */
+
+  /* ── Accents ─────────────────────────────────────────────────────────────── */
+  --accent-amber:      #4a6b5e;              /* dark sage — CTAs, active states  */
+  --accent-amber-dim:  rgba(74,107,94,0.08); /* sage hover tint                  */
+  --accent-amber-glow: rgba(74,107,94,0.04); /* sage card inset glow             */
+  --accent-cyan:       #c8a96e;              /* warm gold — decorative           */
+  --accent-cyan-dim:   rgba(200,169,110,0.12);
+  --accent-primary:    #4a6b5e;              /* dark sage — alias                */
+  --accent-gold:       #c8a96e;              /* warm gold — alias                */
+
+  /* ── Text ─────────────────────────────────────────────────────────────────── */
+  --text-primary:   #2d3d35;  /* near-black green — headings, numbers           */
+  --text-secondary: #4a5548;  /* dark sage — body paragraphs                    */
+  --text-muted:     #7a8a7e;  /* muted sage — labels, captions, placeholders    */
+  --text-accent:    #4a6b5e;  /* dark sage — accent copy                        */
+  --text-body:      #4a5548;  /* alias for --text-secondary                     */
+  --text-on-dark:   #f2ead8;  /* cream — text on sage backgrounds               */
+
+  /* ── Borders ─────────────────────────────────────────────────────────────── */
+  --border-subtle: rgba(74, 107, 94, 0.15);
+  --border-active: #4a6b5e;
+
+  /* ── Status palette (semantic — keep colour-coded) ──────────────────────── */
+  --status-open:     #b8870a;  /* darker amber — readable on white              */
+  --status-review:   #2a8c73;  /* teal — in progress                            */
+  --status-resolved: #2d7a4a;  /* forest green — done                           */
+  --status-rejected: #c44040;  /* red — rejected                                */
+
+  /* ── Elevation — warm sage shadow, no inset glow on light surfaces ─────── */
+  --card-shadow:
+    0 4px 20px rgba(74, 107, 94, 0.10),
+    0 1px 4px  rgba(74, 107, 94, 0.06);
+
+  --card-shadow-hover:
+    0 8px 28px rgba(74, 107, 94, 0.16),
+    0 2px 8px  rgba(74, 107, 94, 0.10);
+
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --font-display: "Playfair Display", Georgia, serif;  /* headings, display    */
+  --font-body:    "DM Sans", system-ui, sans-serif;    /* body, UI             */
+  --font-mono:    "JetBrains Mono", monospace;         /* data, labels, code   */
+
+  /* ── Type scale (major third 1.25×) ─────────────────────────────────────── */
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 16px;
+  --text-lg:   20px;
+  --text-xl:   25px;
+  --text-2xl:  32px;
+  --text-3xl:  40px;
+
+  /* ── Letter-spacing ─────────────────────────────────────────────────────── */
+  --track-caps:  0.06em;   /* ALL CAPS labels (ui-typography rule)              */
+  --track-tight: -0.02em;  /* large display numbers                             */
+  --track-wide:  0.04em;   /* button text                                       */
+
+  /* ── Radii ───────────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+
+/* ── Global reset ────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.hidden { display: none !important; }
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1;
+}
+
+body {
+  background-color: var(--bg-void);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.45;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ── Sage dot-grid texture ───────────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(74, 107, 94, 0.06) 1px, transparent 0);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Warm paper grain overlay ────────────────────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(143, 168, 154, 0.018) 3px,
+    rgba(143, 168, 154, 0.018) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Sage scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #e8e0c8; }
+::-webkit-scrollbar-thumb {
+  background: #8fa89a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: #4a6b5e; }
+
+/* ── Live-pulse animation — sage green ──────────────────────────────────── */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 0 0 rgba(74, 107, 94, 0.5); }
+  50%       { opacity: 0.6; box-shadow: 0 0 0 4px rgba(74, 107, 94, 0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
